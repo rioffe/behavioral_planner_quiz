@@ -7,8 +7,8 @@
 
 
 //TODO: change weights for cost functions.
-const float REACH_GOAL = 0;
-const float EFFICIENCY = 0;
+const float REACH_GOAL = 0.5;
+const float EFFICIENCY = 0.5;
 
 /*
 Here we have provided two possible suggestions for cost functions, but feel free to use your own!
@@ -93,7 +93,7 @@ float calculate_cost(const Vehicle& vehicle,
     float weight_list[] = {REACH_GOAL, EFFICIENCY};
     size_t i = 0;
     for (auto cf: cf_list) {
-        float new_cost = weight_list[i]*cf(vehicle, trajectory, predictions, trajectory_data);
+        float new_cost = weight_list[i++]*cf(vehicle, trajectory, predictions, trajectory_data);
         cost += new_cost;
     }
 

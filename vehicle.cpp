@@ -105,7 +105,7 @@ vector<float> Vehicle::get_kinematics(map<int, vector<Vehicle>> predictions, int
     for a given lane. Tries to choose the maximum velocity and acceleration, 
     given other vehicle positions and accel/velocity constraints.
     */
-    float max_velocity_accel_limit = this->max_acceleration + this->v;
+    float max_velocity_accel_limit = max_acceleration + v;
     float new_position;
     float new_velocity;
     float new_accel;
@@ -117,15 +117,15 @@ vector<float> Vehicle::get_kinematics(map<int, vector<Vehicle>> predictions, int
         if (get_vehicle_behind(predictions, lane, vehicle_behind)) {
             new_velocity = vehicle_ahead.v; //must travel at the speed of traffic, regardless of preferred buffer
         } else {
-            float max_velocity_in_front = (vehicle_ahead.s - this->s - this->preferred_buffer) + vehicle_ahead.v - 0.5 * (this->a);
-            new_velocity = min(min(max_velocity_in_front, max_velocity_accel_limit), this->target_speed);
+            float max_velocity_in_front = (vehicle_ahead.s - s - preferred_buffer) + vehicle_ahead.v - 0.5*a;
+            new_velocity = min(min(max_velocity_in_front, max_velocity_accel_limit), target_speed);
         }
     } else {
-        new_velocity = min(max_velocity_accel_limit, this->target_speed);
+        new_velocity = min(max_velocity_accel_limit, target_speed);
     }
     
-    new_accel = new_velocity - this->v; //Equation: (v_1 - v_0)/t = acceleration
-    new_position = this->s + new_velocity + new_accel / 2.0;
+    new_accel = new_velocity - v; //Equation: (v_1 - v_0)/t = acceleration
+    new_position = s + new_velocity + new_accel / 2.0;
     return{new_position, new_velocity, new_accel};
     
 }
@@ -193,18 +193,18 @@ vector<Vehicle> Vehicle::lane_change_trajectory(string state, map<int, vector<Ve
     /*
     Generate a lane change trajectory.
     */
-    int new_lane = this->lane + lane_direction[state];
+    int new_lane = lane + lane_direction[state];
     vector<Vehicle> trajectory;
     Vehicle next_lane_vehicle;
     //Check if a lane change is possible (check if another vehicle occupies that spot).
     for (map<int, vector<Vehicle>>::iterator it = predictions.begin(); it != predictions.end(); ++it) {
         next_lane_vehicle = it->second[0];
-        if (next_lane_vehicle.s == this->s && next_lane_vehicle.lane == new_lane) {
+        if (next_lane_vehicle.s == s && next_lane_vehicle.lane == new_lane) {
             //If lane change is not possible, return empty trajectory.
             return trajectory;
         }
     }
-    trajectory.push_back(Vehicle(this->lane, this->s, this->v, this->a, this->state));
+    trajectory.push_back(Vehicle(lane, s, v, a, state));
     vector<float> kinematics = get_kinematics(predictions, new_lane);
     trajectory.push_back(Vehicle(new_lane, kinematics[0], kinematics[1], kinematics[2], state));
     return trajectory;
@@ -242,7 +242,7 @@ bool Vehicle::get_vehicle_ahead(map<int, vector<Vehicle>> predictions, int lane,
     Returns a true if a vehicle is found ahead of the current vehicle, false otherwise. The passed reference
     rVehicle is updated if a vehicle is found.
     */
-    int min_s = this->goal_s;
+    int min_s = goal_s;
     bool found_vehicle = false;
     Vehicle temp_vehicle;
     for (auto it = predictions.begin(); it != predictions.end(); ++it) {
@@ -268,7 +268,7 @@ vector<Vehicle> Vehicle::generate_predictions(int horizon) {
       if (i < horizon-1) {
         next_v = position_at(i+1) - s;
       }
-      predictions.push_back(Vehicle(this->lane, next_s, next_v, 0));
+      predictions.push_back(Vehicle(lane, next_s, next_v, 0));
   	}
     return predictions;
 
