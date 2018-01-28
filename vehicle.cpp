@@ -14,18 +14,15 @@
 Vehicle::Vehicle(){}
 
 Vehicle::Vehicle(int lane, float s, float v, float a, string state) {
-
     this->lane = lane;
     this->s = s;
     this->v = v;
     this->a = a;
     this->state = state;
     max_acceleration = -1;
-
 }
 
 Vehicle::~Vehicle() {}
-
 
 vector<Vehicle> Vehicle::choose_next_state(map<int, vector<Vehicle>> predictions) {
     /*
@@ -48,11 +45,33 @@ vector<Vehicle> Vehicle::choose_next_state(map<int, vector<Vehicle>> predictions
     3. calculate_cost(Vehicle vehicle, map<int, vector<Vehicle>> predictions, vector<Vehicle> trajectory) - Included from 
        cost.cpp, computes the cost for a trajectory.
     */
-    
-    //TODO: Your solution here.
-    
-    //TODO: Change return value here:
-    return generate_trajectory("KL", predictions);
+    auto possible_successor_states = successor_states();
+
+    map<string, float> costs;
+
+    for (auto st : possible_successor_states) {
+        auto trajectory_for_state = generate_trajectory(st, predictions);
+
+        float cost_for_state = 9999999.9;
+        if (trajectory_for_state.size() != 0)
+            cost_for_state = calculate_cost(*this, predictions, trajectory_for_state);
+
+        costs[st] = cost_for_state;
+    }
+    string best_next_state = "None";
+    float min_cost = 9999999.9;
+    for (auto st : possible_successor_states) {
+        auto cost = costs[st];
+        if (cost < min_cost) {
+            min_cost = cost;
+            best_next_state = st;
+        }
+    }
+
+    if (best_next_state != "None")
+        return generate_trajectory(best_next_state, predictions);
+    else
+        return generate_trajectory("KL", predictions);
 }
 
 vector<string> Vehicle::successor_states() {
@@ -126,7 +145,7 @@ vector<float> Vehicle::get_kinematics(map<int, vector<Vehicle>> predictions, int
     
     new_accel = new_velocity - v; //Equation: (v_1 - v_0)/t = acceleration
     new_position = s + new_velocity + new_accel / 2.0;
-    return{new_position, new_velocity, new_accel};
+    return {new_position, new_velocity, new_accel};
     
 }
 
@@ -271,7 +290,6 @@ vector<Vehicle> Vehicle::generate_predictions(int horizon) {
       predictions.push_back(Vehicle(lane, next_s, next_v, 0));
   	}
     return predictions;
-
 }
 
 void Vehicle::realize_next_state(vector<Vehicle> trajectory) {
