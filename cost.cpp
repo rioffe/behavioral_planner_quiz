@@ -7,8 +7,8 @@
 
 
 //TODO: change weights for cost functions.
-const float REACH_GOAL = 0.87;
-const float EFFICIENCY = 0.13;
+const float REACH_GOAL = 0.9;
+const float EFFICIENCY = 0.1;
 
 /*
 Here we have provided two possible suggestions for cost functions, but feel free to use your own!
@@ -30,7 +30,7 @@ float goal_distance_cost(const Vehicle& vehicle,
     float cost;
     float distance = data["distance_to_goal"];
     if (distance > 0) {
-        cost = 1 - 2*exp(-(abs(2.0*vehicle.goal_lane - data["intended_lane"] - data["final_lane"]) / distance));
+        cost = 1 - exp(-(abs(2.0*vehicle.goal_lane - data["intended_lane"] - data["final_lane"]) / distance));
     } else {
         cost = 1;
     }
@@ -98,7 +98,6 @@ float calculate_cost(const Vehicle& vehicle,
     }
 
     return cost;
-
 }
 
 map<string, float> get_helper_data(const Vehicle& vehicle, 
